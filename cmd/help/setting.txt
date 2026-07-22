@@ -1,0 +1,47 @@
+setting {commands}
+
+Commands:
+                                  show all settings
+    help                          show help
+
+    socks [port]                  set socks port
+    http [port]                   set http port, 0 to disable http listener
+    udp [y|n]                     enable udp forwarding
+    sniffing [y|n]                enable traffic address sniffing
+    from_lan_conn [y|n]           allow connections from the LAN
+    mux [y|n]                     enable multiplexing (recommended off for downloads/video)
+    allow_insecure [y|n]          allow insecure TLS connections
+    user_agent [ua]               set global User-Agent, default sing-box
+
+    dns.port [port]               set DNS port
+    dns.foreign [dns]             set foreign DNS
+    dns.domestic [dns]            set domestic DNS
+    dns.backup [dns]              set domestic backup DNS
+
+    routing.strategy {1|2|3}      set route strategy to {AsIs|IPIfNonMatch|IPOnDemand}
+    routing.bypass {y|n}          bypass LAN and mainland
+
+    test.url [url]                set external test URL
+    test.timeout [time]           set external test timeout (seconds)
+    test.mintime [time]           set batch test termination time (milliseconds)
+
+    run_before [command group] [flags]    commands or command group to run at startup, can be combined with aliases
+
+    chain_proxy [index|off]       set chain proxy node index, off to disable (sing-box)
+    tun_mode [y|n]                enable TUN mode (Linux only, sing-box)
+    tun_auto_route [y|n]          TUN auto route (sing-box)
+    tun_auto_redirect [y|n]       TUN auto redirect (sing-box)
+    config_dir [path]             set sing-box working directory (sing-box), default uses the default directory
+
+
+run_before Flags
+    -c, --close                   do not run any command at startup
+
+Notes:
+1. Command: a single command such as 'node', 'node tcping', 'sub update-node'.
+2. Command group: multiple commands like 'sub update-node | node tcping | run', separated by '|' and executed in order.
+PS: a command group can also contain just a single command.
+
+TUN mode permission setup (required on first use on Linux):
+    sudo apt install libcap2-bin
+    sudo setcap cap_net_admin,cap_net_bind_service=ep /path/to/sing-box

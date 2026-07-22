@@ -1,0 +1,14 @@
+filter {commands} ...
+
+Commands:
+                                  show filter rules
+    help                          show help
+    rm {index}                    delete filter rule
+    open {index}                  enable filter rule
+    close {index}                 disable filter rule
+    add {filter rule}             add filter rule
+    run [filter rule]             manually filter nodes; defaults to built-in rules
+
+PS: filter rule ==> 'scope:regex'
+Scope values: proto:|name:|addr:|port: represent protocol|alias|address|port respectively.
+Default is 'name:'.

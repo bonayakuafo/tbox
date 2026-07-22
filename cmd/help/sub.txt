@@ -1,0 +1,27 @@
+sub {commands} [flags] ...
+
+Commands:
+                                  show subscription info
+    help                          show help
+    remark                        show subscription notes
+    rm {index}                    delete subscription
+    add {subscription url} [flags]         add subscription
+    mv {index} {flags}            modify subscription
+    update-node [index] [flags]   update nodes from subscription; index ignores enabled state
+
+add Flags
+    -r, --remarks {alias}         define alias
+    -a, --ua {User-Agent}         set a per-subscription User-Agent
+    -m, --remark {note}           add subscription note
+
+mv Flags
+    -u, --url {subscription url}  change subscription link
+    -r, --remarks {alias}         define alias
+    -a, --ua {User-Agent}         change the per-subscription User-Agent
+    -m, --remark {note}           change subscription note
+    --using {y|n}                 enable/disable this subscription
+
+update-node Flags
+    -s, --socks5 [port]           update via local socks5 proxy, defaults to socks5 port in settings
+    -h, --http [port]             update via local http proxy, defaults to http port in settings
+    -a, --addr {address}          supplements the two options above, sets the proxy address

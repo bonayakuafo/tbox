@@ -1,0 +1,15 @@
+routing {commands} [flags] ...
+
+Commands:
+    help                          show help
+    block [index] | [flags]       show or manage block route rules
+    direct [index] | [flags]      show or manage direct route rules
+    proxy [index] | [flags]       show or manage proxy route rules
+
+block, direct, proxy Flags
+    -a, --add {rule}              add route rule
+    -r, --rm {index}              delete route rule
+    -f, --file {path}             import rules from file
+    -c, --clipboard               import rules from clipboard
+
+PS: for rule details see https://xtls.github.io/config/routing.html#ruleobject

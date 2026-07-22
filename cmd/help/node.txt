@@ -1,0 +1,27 @@
+node {commands} [flags] ...
+
+Commands:
+    [index] [flags]               show node info, default 'all'
+    help                          show help
+    tcping                        test node tcp latency
+    sort {0|1|2|3|4|5}            sort by {reverse|protocol|alias|address|port|test result}
+    info {index}                  show detailed info for a single node
+    rm {index}                    delete node
+    find {keyword}                find nodes (by alias)
+    add [flags]                   add node
+    export [index] [flags]        export node links, default 'all'
+
+Flags
+    -d, --desc                    descending order
+
+add Flags
+    -l, --link {link}             import one node from a link
+    -f, --file {path}             import nodes from a node-link file or subscription file
+    -c, --clipboard               import nodes from a node link or subscription text on the clipboard
+
+export Flags
+    -c, --clipboard               export node links to clipboard
+
+Notes:
+1. The node list shows a "Subscription" column indicating which subscription the node came from.
+2. Manually added nodes have an empty subscription column.

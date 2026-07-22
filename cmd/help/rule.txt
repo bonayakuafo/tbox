@@ -1,0 +1,73 @@
+rule {route|dns} {commands}   sing-box split rules (sing-box only)
+
+    rule route  --  traffic route rules
+    rule dns    --  DNS route rules
+
+============================ rule route ============================
+
+Commands:
+    rule route                    show number of traffic split rules
+    rule route ls                 list all traffic split rules
+    rule route add --target <target> [match flags]     add a rule
+    rule route edit <index> [--target/--action] [--add-xxx/--rm-xxx] edit a rule
+    rule route rm <index>         delete the specified rule
+    rule route clear              clear all rules
+
+Target(--target):
+    direct                        direct
+    proxy                         proxy outbound
+    block                         block
+    node:<index>                  route via specific node
+
+Action(--action, default route):
+    route                         route directly to target outbound
+    resolve                       resolve domain first, then route
+
+Match Flags(add; comma-separate multiple values):
+    --domain / --domain-suffix / --geosite
+    --ip-cidr / --match-outbound / --inbound
+
+Edit Flags(edit; incremental add/remove on existing rule):
+    --add-domain / --rm-domain    add/remove full domain
+    --add-domain-suffix / --rm-domain-suffix
+    --add-geosite / --rm-geosite
+    --add-ip-cidr / --rm-ip-cidr
+    --add-match-outbound / --rm-match-outbound
+    --add-inbound / --rm-inbound
+    --target / --action           overwrite target/action directly
+    e.g.: rule route edit 1 --add-domain a.com,b.com --rm-domain c.com
+
+============================ rule dns ==============================
+
+Commands:
+    rule dns                      show DNS split config and rule count
+    rule dns ls                   list all DNS split rules
+    rule dns add --server <alias> [match flags] [--detour <target>]  add a rule
+    rule dns edit <index> [--server/--detour] [--add-xxx/--rm-xxx]  edit a rule
+    rule dns rm <index>           delete the specified rule
+    rule dns clear                clear all DNS split rules
+
+Server Aliases(--server):
+    local                         local resolver
+    domestic                      domestic DNS (maps to domestic_1)
+    backup                        domestic backup DNS (maps to domestic_2)
+    foreign                       foreign DNS (maps to foreign)
+
+Match Flags(add; comma-separate multiple values):
+    --domain / --domain-suffix / --domain-keyword
+    --rule-set / --ip-cidr / --query-type / --inbound
+
+Edit Flags(edit; incremental add/remove on existing rule):
+    --add-domain / --rm-domain
+    --add-domain-suffix / --rm-domain-suffix
+    --add-domain-keyword / --rm-domain-keyword
+    --add-rule-set / --rm-rule-set
+    --add-ip-cidr / --rm-ip-cidr
+    --add-query-type / --rm-query-type
+    --add-inbound / --rm-inbound
+    --server / --detour           overwrite server/outbound directly
+    e.g.: rule dns edit 1 --add-domain a.com --server foreign
+
+Detour(--detour, optional):
+    proxy / direct / block / node:<index>
+    default: foreign uses proxy, others use direct; applies to DNS server, not rule

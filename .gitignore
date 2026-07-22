@@ -1,0 +1,12 @@
+/temp
+/build
+/dist
+/.vscode
+/.claude
+/.omo
+/.ruff_cache
+/.sisyphus
+/tbox
+/data.json
+/routing.json
+/setting.toml

@@ -1,0 +1,49 @@
+package setting
+
+import (
+	"tbox/core/setting/key"
+	"errors"
+	"github.com/spf13/viper"
+)
+
+func TestUrl() string {
+	return viper.GetString(key.TestURL)
+}
+
+func SetTestUrl(url string) error {
+	viper.Set(key.TestURL, url)
+	return viper.WriteConfig()
+}
+
+func TestTimeout() int {
+	return viper.GetInt(key.TestTimeout)
+}
+
+func SetTestTimeout(timeout int) error {
+	if timeout < 0 {
+		return errors.New("value must not be less than 0")
+	}
+	viper.Set(key.TestTimeout, timeout)
+	return viper.WriteConfig()
+}
+
+func TestMinTime() int {
+	return viper.GetInt(key.TestMinTime)
+}
+
+func SetTestMinTime(timeout int) error {
+	if timeout < 0 {
+		return errors.New("value must not be less than 0")
+	}
+	viper.Set(key.TestMinTime, timeout)
+	return viper.WriteConfig()
+}
+
+func RunBefore() string {
+	return viper.GetString(key.RunBefore)
+}
+
+func SetRunBefore(cmd string) error {
+	viper.Set(key.RunBefore, cmd)
+	return viper.WriteConfig()
+}

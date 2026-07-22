@@ -1,0 +1,32 @@
+Commands:
+    setting                  base settings         use 'setting help' for details
+    node                     node management       use 'node help' for details
+    sub                      subscription management  use 'sub help' for details
+    rule                     split rules           use 'rule help' for details
+    routing                  routing management    use 'routing help' for details
+    filter                   node filter           use 'filter help' for details
+    alias                    command aliases       use 'alias help' for details
+    help, -h                 show help
+    version, -v              show version
+    clear                    clear screen
+    exit                     exit program
+    run                      start or restart the node
+    stop                     stop the node
+    log                      view runtime core log
+    test                     test all nodes
+
+Usage: run [index]
+    run [index]      defaults to the last run node; if multiple nodes are selected, picks the one with the lowest latency to the test URL in 'setting'
+
+
+Notes:
+1. Index syntax: easier batch selection
+   1. Select the first 6: '1,2,3,4,5,6' or '1-3,4-6' or '1-6' or '-6'
+   2. Select the 6th and everything after: '6-'
+   3. Select the 6th: '6'
+   4. Select all: 'all' or '-'
+   Note: out-of-range values are ignored; 'all' can only be used alone.
+
+2. [] and {}: brackets and braces in help text
+   1. []: the option can be omitted
+   2. {}: the option is required and cannot be omitted

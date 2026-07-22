@@ -1,0 +1,12 @@
+alias {commands} ...
+
+Commands:
+                                  show command aliases
+    help                          show help
+    set {alias} {command group}   set a command alias
+    rm {index}                    delete command alias
+
+Notes:
+1. Command: a single command such as 'node', 'node tcping', 'sub update-node'.
+2. Command group: multiple commands like 'sub update-node | node tcping | run', separated by '|' and executed in order.
+PS: a command group can also contain just a single command.
