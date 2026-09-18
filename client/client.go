@@ -199,6 +199,15 @@ func Connecting(indexList []int) {
 func run(node protocols.Protocol) bool {
 	Stop()
 	switch node.GetProtocolMode() {
+	case protocols.ModeDirect:
+		coreName := "sing-box"
+		corePath, err := ResolveCore(coreName)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+		ok, _ := launchCore(node, coreName, corePath)
+		return ok
 	case protocols.ModeShadowSocks, protocols.ModeTrojan, protocols.ModeVMess, protocols.ModeSocks, protocols.ModeVLESS, protocols.ModeVMessAEAD, protocols.ModeHysteria2, protocols.ModeShadowSocksR, protocols.ModeTUIC, protocols.ModeAnyTLS:
 		// Pick the actual core to use based on the node's protocol/transport
 		// (default sing-box; xhttp uses xray; Hysteria2/TUIC/AnyTLS/SSR use sing-box).

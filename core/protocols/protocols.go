@@ -57,6 +57,10 @@ func Deserialize(text string) Protocol {
 			data = new(AnyTLS)
 		case string(ModeHysteria2):
 			data = new(Hysteria2)
+		case string(ModeDirect):
+			data = new(Direct)
+		default:
+			return nil
 		}
 		err := json.Unmarshal([]byte(jsonText), &data)
 		if err != nil {

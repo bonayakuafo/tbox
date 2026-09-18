@@ -80,7 +80,7 @@ func (s SingBox) genConfig(node protocols.Protocol, plan *BridgePlan, bridgePort
 		"inbounds":     s.inboundsConfig(),
 		"outbounds":    s.outboundConfig(node, splitData.outbounds, plan, bridgePort),
 		"dns":          s.dnsConfig(splitData.dnsRules, splitData.dnsServerDetours),
-		"route":        s.routingConfig(splitData.routeRules, bridgePort),
+		"route":        s.routingConfig(splitData.routeRules, bridgePort, node != nil && node.GetProtocolMode() == protocols.ModeDirect),
 		"experimental": s.experimentalConfig(),
 	}
 	err := core.WriteJSON(conf, path)
@@ -418,7 +418,7 @@ func splitDNSHostPort(address string, defaultPort int) (string, int) {
 }
 
 // routing
-func (s SingBox) routingConfig(splitRules []interface{}, bridgePort int) interface{} {
+func (s SingBox) routingConfig(splitRules []interface{}, bridgePort int, direct bool) interface{} {
 	rules := make([]interface{}, 0)
 	ruleSet := make([]interface{}, 0)
 
@@ -490,16 +490,19 @@ func (s SingBox) routingConfig(splitRules []interface{}, bridgePort int) interfa
 		})
 	}
 
+	final := "proxy"
+	if direct {
+		final = "direct-out"
+	}
 	rules = append(rules, map[string]interface{}{
 		"inbound":  inboundTags,
-		"outbound": "proxy",
+		"outbound": final,
 	})
-
 	return map[string]interface{}{
 		"rule_set":                ruleSet,
 		"rules":                   rules,
 		"default_domain_resolver": "local",
-		"final":                   "proxy",
+		"final":                   final,
 		"auto_detect_interface":   true,
 	}
 }

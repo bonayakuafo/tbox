@@ -14,6 +14,7 @@ const (
 	ModeHysteria2    Mode = "Hysteria2"
 	ModeTUIC         Mode = "TUIC"
 	ModeAnyTLS       Mode = "AnyTLS"
+	ModeDirect       Mode = "Direct"
 )
 
 func (m Mode) String() string {

@@ -3,6 +3,7 @@ package manage
 import (
 	"tbox/core"
 	"tbox/core/node"
+	"tbox/core/protocols"
 	"tbox/core/sub"
 	"tbox/log"
 	"encoding/json"
@@ -22,6 +23,7 @@ var Manager *Manage
 func init() {
 	Manager = NewManage()
 	if _, err := os.Stat(core.DataFile); os.IsNotExist(err) {
+		Manager.ensureDirectNode()
 		Manager.Save()
 	} else {
 		file, err := os.Open(core.DataFile)
@@ -35,9 +37,24 @@ func init() {
 			log.Error(err)
 		}
 		Manager.NodeForEach(func(i int, n *node.Node) {
-			n.ParseData()
+			if n != nil {
+				n.ParseData()
+			}
 		})
+		Manager.ensureDirectNode()
+		Manager.Save()
 	}
+}
+
+func (m *Manage) ensureDirectNode() {
+	for _, n := range m.NodeList {
+		if n != nil && n.Protocol != nil && n.Protocol.GetProtocolMode() == protocols.ModeDirect {
+			return
+		}
+	}
+	direct := node.NewNodeByData(&protocols.Direct{})
+	direct.Serialize2Data()
+	m.NodeList = append(m.NodeList, direct)
 }
 
 func NewManage() *Manage {

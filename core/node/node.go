@@ -40,11 +40,19 @@ func NewNodeByData(protocol protocols.Protocol) *Node {
 // ParseData deserializes Data back into a Protocol.
 func (n *Node) ParseData() {
 	n.Protocol = protocols.ParseLink(n.Data)
+	if n.Protocol == nil {
+		n.Protocol = protocols.Deserialize(n.Data)
+	}
 }
 
 // Serialize2Data serializes the Protocol into Data.
 func (n *Node) Serialize2Data() {
-	n.Data = n.GetLink()
+	if n == nil || n.Protocol == nil {
+		return
+	}
+	// Persist the protocol payload rather than relying on a share link. Some
+	// protocols (notably HTTP) do not have a share-link representation.
+	n.Data = protocols.Serialize(n.Protocol)
 }
 
 func (n *Node) Tcping() {
