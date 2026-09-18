@@ -60,7 +60,7 @@ func InitNodeShell(shell *ishell.Shell) {
 			}
 			for _, index := range indexList {
 				n := manage.Manager.GetNode(index)
-				if n != nil {
+				if n != nil && n.Protocol != nil {
 					subName := getSubNameByID(n.SubID)
 					table.Append([]string{
 						strconv.Itoa(index),
@@ -212,7 +212,7 @@ func InitNodeShell(shell *ishell.Shell) {
 			table.SetColumnAlignment([]int{center, center, left, center, center, center, center})
 			table.SetColWidth(70)
 			manage.Manager.NodeForEach(func(i int, n *node.Node) {
-				if n != nil && strings.Contains(n.GetName(), c.Args[0]) {
+				if n != nil && n.Protocol != nil && strings.Contains(n.GetName(), c.Args[0]) {
 					subName := getSubNameByID(n.SubID)
 					defer table.Append([]string{
 						strconv.Itoa(i),

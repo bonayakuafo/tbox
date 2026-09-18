@@ -59,6 +59,8 @@ func ParseLink(link string) Protocol {
 		if obj := ParseAnyTLSLink(link); obj != nil {
 			return obj
 		}
+	case "direct":
+		return &Direct{}
 	}
 	return nil
 }
