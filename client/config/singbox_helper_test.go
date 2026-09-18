@@ -428,3 +428,45 @@ func TestOutboundConfig_NonBridgeUnchanged(t *testing.T) {
 		t.Errorf("non-bridge mode proxy should be vless outbound, got %v", proxy["type"])
 	}
 }
+
+// TestOutboundConfig_DirectProvidesProxyAlias locks in that the built-in
+// Direct node still emits a proxy-tagged outbound. DNS and routing rules may
+// reference proxy even though the selected node sends all traffic directly.
+func TestOutboundConfig_DirectProvidesProxyAlias(t *testing.T) {
+	out := SingBox{}.outboundConfig(&protocols.Direct{}, nil, nil, 0).([]interface{})
+
+	var proxy map[string]interface{}
+	for _, item := range out {
+		outbound := item.(map[string]interface{})
+		if outbound["tag"] == "proxy" {
+			proxy = outbound
+			break
+		}
+	}
+	if proxy == nil {
+		t.Fatal("direct node should generate a proxy-tagged outbound")
+	}
+	if proxy["type"] != "direct" {
+		t.Errorf("direct node proxy outbound type should be direct, got %v", proxy["type"])
+	}
+}
+
+func TestDNSDetourIsDirect(t *testing.T) {
+	splitOutbounds := []interface{}{map[string]interface{}{"tag": "split-node-1", "type": "direct"}}
+	tests := []struct {
+		tag        string
+		mainDirect bool
+		wantDirect bool
+	}{
+		{tag: "proxy", mainDirect: true, wantDirect: true},
+		{tag: "proxy", mainDirect: false, wantDirect: false},
+		{tag: "direct-out", wantDirect: true},
+		{tag: "split-node-1", wantDirect: true},
+		{tag: "split-node-2", wantDirect: false},
+	}
+	for _, tc := range tests {
+		if got := dnsDetourIsDirect(tc.tag, tc.mainDirect, splitOutbounds); got != tc.wantDirect {
+			t.Errorf("dnsDetourIsDirect(%q, %v) = %v, want %v", tc.tag, tc.mainDirect, got, tc.wantDirect)
+		}
+	}
+}

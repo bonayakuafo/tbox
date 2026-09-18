@@ -1,6 +1,14 @@
 package config
 
 import (
+	"fmt"
+	"net"
+	"net/url"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
 	"tbox/core"
 	"tbox/core/manage"
 	"tbox/core/protocols"
@@ -10,14 +18,6 @@ import (
 	"tbox/core/setting/key"
 	"tbox/core/singbox_split"
 	"tbox/log"
-	"fmt"
-	"net"
-	"net/url"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strconv"
-	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -74,13 +74,14 @@ func (s SingBox) GenBridgeConfig(node protocols.Protocol, plan *BridgePlan, brid
 func (s SingBox) genConfig(node protocols.Protocol, plan *BridgePlan, bridgePort int) (string, error) {
 	coreDir := core.GetCoreDir("sing-box")
 	splitData := s.loadSplitData(plan)
+	direct := node != nil && node.GetProtocolMode() == protocols.ModeDirect
 	path := filepath.Join(coreDir, "config.json")
 	var conf = map[string]interface{}{
 		"log":          s.logConfig(),
 		"inbounds":     s.inboundsConfig(),
 		"outbounds":    s.outboundConfig(node, splitData.outbounds, plan, bridgePort),
-		"dns":          s.dnsConfig(splitData.dnsRules, splitData.dnsServerDetours),
-		"route":        s.routingConfig(splitData.routeRules, bridgePort, node != nil && node.GetProtocolMode() == protocols.ModeDirect),
+		"dns":          s.dnsConfigForNode(splitData.dnsRules, splitData.dnsServerDetours, splitData.outbounds, direct),
+		"route":        s.routingConfig(splitData.routeRules, bridgePort, direct),
 		"experimental": s.experimentalConfig(),
 	}
 	err := core.WriteJSON(conf, path)
@@ -301,7 +302,13 @@ func (s SingBox) experimentalConfig() interface{} {
 }
 
 // DNS
+// dnsConfig preserves the legacy helper behavior for callers that do not
+// provide node-specific outbound metadata.
 func (s SingBox) dnsConfig(splitRules []interface{}, serverDetours map[string]string) interface{} {
+	return s.dnsConfigForNode(splitRules, serverDetours, nil, false)
+}
+
+func (s SingBox) dnsConfigForNode(splitRules []interface{}, serverDetours map[string]string, splitOutbounds []interface{}, mainDirect bool) interface{} {
 	servers := make([]interface{}, 0)
 	rules := make([]interface{}, 0)
 
@@ -315,7 +322,7 @@ func (s SingBox) dnsConfig(splitRules []interface{}, serverDetours map[string]st
 	// domestic-backup config
 	if setting.DNSBackup() != "" {
 		server := s.buildDNSServer("domestic_2", setting.DNSBackup())
-		if d, ok := serverDetours["domestic_2"]; ok && d != "" {
+		if d, ok := serverDetours["domestic_2"]; ok && d != "" && !dnsDetourIsDirect(d, mainDirect, splitOutbounds) {
 			server["detour"] = d
 		}
 		servers = append(servers, server)
@@ -324,7 +331,7 @@ func (s SingBox) dnsConfig(splitRules []interface{}, serverDetours map[string]st
 	// normal domestic config
 	if setting.DNSDomestic() != "" {
 		server := s.buildDNSServer("domestic_1", setting.DNSDomestic())
-		if d, ok := serverDetours["domestic_1"]; ok && d != "" {
+		if d, ok := serverDetours["domestic_1"]; ok && d != "" && !dnsDetourIsDirect(d, mainDirect, splitOutbounds) {
 			server["detour"] = d
 		}
 		servers = append(servers, server)
@@ -340,9 +347,9 @@ func (s SingBox) dnsConfig(splitRules []interface{}, serverDetours map[string]st
 	// default rules go through the foreign proxy
 	if setting.DNSForeign() != "" {
 		foreignServer := s.buildDNSServer("foreign", setting.DNSForeign())
-		if d, ok := serverDetours["foreign"]; ok && d != "" {
+		if d, ok := serverDetours["foreign"]; ok && d != "" && !dnsDetourIsDirect(d, mainDirect, splitOutbounds) {
 			foreignServer["detour"] = d
-		} else {
+		} else if !mainDirect {
 			foreignServer["detour"] = "proxy"
 		}
 		servers = append(servers, foreignServer)
@@ -362,6 +369,23 @@ func (s SingBox) dnsConfig(splitRules []interface{}, serverDetours map[string]st
 		// domain->IP mapping so the route stage can reverse-lookup domains for IP connections.
 		"reverse_mapping": setting.Sniffing(),
 	}
+}
+
+// dnsDetourIsDirect reports whether a DNS detour resolves to a direct
+// outbound. sing-box rejects DNS transports whose detour is a direct outbound;
+// omitting the detour lets the DNS server use its normal direct transport.
+func dnsDetourIsDirect(tag string, mainDirect bool, splitOutbounds []interface{}) bool {
+	if tag == "direct-out" || (tag == "proxy" && mainDirect) {
+		return true
+	}
+	for _, item := range splitOutbounds {
+		outbound, ok := item.(map[string]interface{})
+		if !ok || outbound["tag"] != tag {
+			continue
+		}
+		return outbound["type"] == "direct"
+	}
+	return false
 }
 
 func (s SingBox) buildDNSServer(tag, address string) map[string]interface{} {
@@ -560,6 +584,10 @@ func (s SingBox) outboundForProtocol(n protocols.Protocol, tag string) map[strin
 	case protocols.ModeAnyTLS:
 		a := n.(*protocols.AnyTLS)
 		outbound = s.anytlsOutbound(a)
+	case protocols.ModeDirect:
+		outbound = map[string]interface{}{
+			"type": "direct",
+		}
 	}
 	if outbound != nil {
 		outbound["tag"] = tag
